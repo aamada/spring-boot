@@ -50,6 +50,7 @@ class TomcatStarter implements ServletContainerInitializer {
 	public void onStartup(Set<Class<?>> classes, ServletContext servletContext) throws ServletException {
 		try {
 			for (ServletContextInitializer initializer : this.initializers) {
+				// ServletContainerInitializer它这里, 其实使用的是ServletContextInitializer
 				initializer.onStartup(servletContext);
 			}
 		}

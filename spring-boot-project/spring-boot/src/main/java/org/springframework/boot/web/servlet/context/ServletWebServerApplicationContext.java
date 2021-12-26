@@ -177,6 +177,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 		ServletContext servletContext = getServletContext();
 		if (webServer == null && servletContext == null) {
 			StartupStep createWebServer = this.getApplicationStartup().start("spring.boot.webserver.create");
+			// TomcatServletWebServerFactory从这里来的, 从容器里来的, 但是什么时候给放入至容器里去的呢?
 			ServletWebServerFactory factory = getWebServerFactory();
 			createWebServer.tag("factory", factory.getClass().toString());
 			this.webServer = factory.getWebServer(getSelfInitializer());
@@ -220,6 +221,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	/**
 	 * Returns the {@link ServletContextInitializer} that will be used to complete the
 	 * setup of this {@link WebApplicationContext}.
+	 * 这是一种回调方式的设计, 在TomcatStarter#onStartUp方法被调用时, 就会走到这里来
 	 * @return the self initializer
 	 * @see #prepareWebApplicationContext(ServletContext)
 	 */
@@ -228,7 +230,9 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	}
 
 	private void selfInitialize(ServletContext servletContext) throws ServletException {
+		// 给servlet上下文设置根上下文
 		prepareWebApplicationContext(servletContext);
+		// 设置application级别的scope为servletContext
 		registerApplicationScope(servletContext);
 		WebApplicationContextUtils.registerEnvironmentBeans(getBeanFactory(), servletContext);
 		for (ServletContextInitializer beans : getServletContextInitializerBeans()) {
@@ -238,8 +242,10 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 
 	private void registerApplicationScope(ServletContext servletContext) {
 		ServletContextScope appScope = new ServletContextScope(servletContext);
+		// 给工厂设置一个应用级的范围, servlet
 		getBeanFactory().registerScope(WebApplicationContext.SCOPE_APPLICATION, appScope);
 		// Register as ServletContext attribute, for ContextCleanupListener to detect it.
+		// 也将其设置到servlet容器中去
 		servletContext.setAttribute(ServletContextScope.class.getName(), appScope);
 	}
 
@@ -268,22 +274,28 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	 * @param servletContext the operational servlet context
 	 */
 	protected void prepareWebApplicationContext(ServletContext servletContext) {
+		// 从servlet上下文中, 查询出来根上下文
 		Object rootContext = servletContext.getAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
 		if (rootContext != null) {
 			if (rootContext == this) {
+				// 如果这个根上下文就是servlet的上下文, 那么就不能初始化了, 因为它已经是一个根上下文了, 检查一下, 你是不是有多个servlet上下文的初始化器
 				throw new IllegalStateException(
 						"Cannot initialize context because there is already a root application context present - "
 								+ "check whether you have multiple ServletContextInitializers!");
 			}
+			// 直接返回
 			return;
 		}
+		// 到这里的话, 说明, 没有根上下文
 		servletContext.log("Initializing Spring embedded WebApplicationContext");
 		try {
+			// 设置这个servlet上下文的根上下文就是此容器
 			servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, this);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Published root WebApplicationContext as ServletContext attribute with name ["
 						+ WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE + "]");
 			}
+			// 将这个servlet上下文设置给这个容器的servletContext字段
 			setServletContext(servletContext);
 			if (logger.isInfoEnabled()) {
 				long elapsedTime = System.currentTimeMillis() - getStartupDate();

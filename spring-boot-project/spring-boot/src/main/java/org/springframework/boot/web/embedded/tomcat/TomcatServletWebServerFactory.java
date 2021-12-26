@@ -248,6 +248,8 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 			addJasperInitializer(context);
 		}
 		context.addLifecycleListener(new StaticResourceConfigurer(context));
+		// 在这里将那些ServletContextInitalizer的实例类给放入到这里来了
+		// 会在调用TomcatStarter的onStartUp方法时被调用
 		ServletContextInitializer[] initializersToUse = mergeInitializers(initializers);
 		host.addChild(context);
 		configureContext(context, initializersToUse);
@@ -366,7 +368,9 @@ public class TomcatServletWebServerFactory extends AbstractServletWebServerFacto
 	protected void configureContext(Context context, ServletContextInitializer[] initializers) {
 		TomcatStarter starter = new TomcatStarter(initializers);
 		if (context instanceof TomcatEmbeddedContext) {
+			// 如果是内嵌的context
 			TomcatEmbeddedContext embeddedContext = (TomcatEmbeddedContext) context;
+			// 那么就使用这个TomcatStarter作为Initializer去作初始化
 			embeddedContext.setStarter(starter);
 			embeddedContext.setFailCtxIfServletStartFails(true);
 		}

@@ -26,7 +26,7 @@ plugins {
 	id "io.spring.ge.conventions" version "0.0.8"
 }
 
-rootProject.name="spring-boot-build"
+rootProject.name="source_read_spring-boot-build"
 
 settings.gradle.projectsLoaded {
 	gradleEnterprise {
