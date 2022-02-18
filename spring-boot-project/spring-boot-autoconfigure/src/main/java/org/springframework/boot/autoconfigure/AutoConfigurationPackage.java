@@ -33,6 +33,8 @@ import org.springframework.context.annotation.Import;
  * @author Phillip Webb
  * @since 1.3.0
  * @see AutoConfigurationPackages
+ *
+ * 主要功能自动配置包, 它会获取主程序类所在的包路径, 并将包路径下的所有组件注册到ioc容器中
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

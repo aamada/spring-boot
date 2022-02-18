@@ -410,6 +410,10 @@ public class Handler extends URLStreamHandler {
 	 * If possible, capture a URL that is configured with the original jar handler so that
 	 * we can use it as a fallback context later. We can only do this if we know that we
 	 * can reset the handlers after.
+	 *
+	 * 如果可能，捕获一个配置了原始jar处理程序的URL，
+	 * 以便我们可以在以后使用它作为后备上下文,
+	 * 只有当我们知道之后可以重置处理程序时，我们才能这样做。
 	 */
 	static void captureJarContextUrl() {
 		if (canResetCachedUrlHandlers()) {

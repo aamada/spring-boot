@@ -32,6 +32,8 @@ import org.springframework.boot.loader.Launcher;
 /**
  * An archive that can be launched by the {@link Launcher}.
  *
+ * 怎么感觉这个就是相当于一个jar包呢
+ *
  * @author Phillip Webb
  * @since 1.0.0
  * @see JarFileArchive
@@ -64,8 +66,10 @@ public interface Archive extends Iterable<Archive.Entry>, AutoCloseable {
 	 */
 	default Iterator<Archive> getNestedArchives(EntryFilter searchFilter, EntryFilter includeFilter)
 			throws IOException {
+		// 过滤匹配, 这个东西, 给写成了lamda表达式了, 没有写成传统的形式
 		EntryFilter combinedFilter = (entry) -> (searchFilter == null || searchFilter.matches(entry))
 				&& (includeFilter == null || includeFilter.matches(entry));
+		// 获取内部的jar
 		List<Archive> nestedArchives = getNestedArchives(combinedFilter);
 		return nestedArchives.iterator();
 	}

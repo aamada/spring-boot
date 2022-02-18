@@ -255,7 +255,9 @@ public class SpringApplication {
 		this.resourceLoader = resourceLoader;
 		Assert.notNull(primarySources, "PrimarySources must not be null");
 		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
+		// 找到类型
 		this.webApplicationType = WebApplicationType.deduceFromClasspath();
+		// BootstrapRegistryInitializer
 		this.bootstrapRegistryInitializers = new ArrayList<>(
 				getSpringFactoriesInstances(BootstrapRegistryInitializer.class));
 		setInitializers((Collection) getSpringFactoriesInstances(ApplicationContextInitializer.class));
@@ -285,27 +287,42 @@ public class SpringApplication {
 	 * @return a running {@link ApplicationContext}
 	 */
 	public ConfigurableApplicationContext run(String... args) {
+		// 开始时间
 		long startTime = System.nanoTime();
+		// 创建启动上下文
 		DefaultBootstrapContext bootstrapContext = createBootstrapContext();
 		ConfigurableApplicationContext context = null;
+		// 设置awt的东西, 不懂
 		configureHeadlessProperty();
+		// SpringApplicationRunListener很多的这种监听器
+		// 注意此处是为SpringApplicationRunListener, 而不是一般的监听器ApplicationListener
 		SpringApplicationRunListeners listeners = getRunListeners(args);
+		// 每到一步, 通知一下, 广播开始事件
 		listeners.starting(bootstrapContext, this.mainApplicationClass);
 		try {
+			// 创建参数
 			ApplicationArguments applicationArguments = new DefaultApplicationArguments(args);
+			// 加载完属性配置, 执行完成后, 所有的environment的属性都会加载进来, 包括application.properties
 			ConfigurableEnvironment environment = prepareEnvironment(listeners, bootstrapContext, applicationArguments);
 			configureIgnoreBeanInfo(environment);
+			// 打印标志
 			Banner printedBanner = printBanner(environment);
+			// 创建上下文, 这里也是改造过了, 也挺好玩
 			context = createApplicationContext();
 			context.setApplicationStartup(this.applicationStartup);
+			// 准备容器, 主要是调用所有初始化类的initialize方法
 			prepareContext(bootstrapContext, context, environment, listeners, applicationArguments, printedBanner);
+			// 这里就是在spring中看到那个容器初始化, 初始化容器
 			refreshContext(context);
+			// 执行spring容器的初始化后的逻辑, 默认实现为空
 			afterRefresh(context, applicationArguments);
 			Duration timeTakenToStartup = Duration.ofNanos(System.nanoTime() - startTime);
 			if (this.logStartupInfo) {
 				new StartupInfoLogger(this.mainApplicationClass).logStarted(getApplicationLog(), timeTakenToStartup);
 			}
+			// 每到一步, 通知一下, 已经开始了
 			listeners.started(context, timeTakenToStartup);
+			// 调用runner们, ApplicationRunner and CommandLineRunner
 			callRunners(context, applicationArguments);
 		}
 		catch (Throwable ex) {
@@ -314,12 +331,14 @@ public class SpringApplication {
 		}
 		try {
 			Duration timeTakenToReady = Duration.ofNanos(System.nanoTime() - startTime);
+			// 每到一步, 通知一下, 已经准备好了
 			listeners.ready(context, timeTakenToReady);
 		}
 		catch (Throwable ex) {
 			handleRunFailure(context, ex, null);
 			throw new IllegalStateException(ex);
 		}
+		// 返回容器
 		return context;
 	}
 
@@ -332,17 +351,25 @@ public class SpringApplication {
 	private ConfigurableEnvironment prepareEnvironment(SpringApplicationRunListeners listeners,
 			DefaultBootstrapContext bootstrapContext, ApplicationArguments applicationArguments) {
 		// Create and configure the environment
+		// 创建上下文
 		ConfigurableEnvironment environment = getOrCreateEnvironment();
+		// 配置上下文
 		configureEnvironment(environment, applicationArguments.getSourceArgs());
+		// 配置属性
 		ConfigurationPropertySources.attach(environment);
+		// 监听器准备好了环境, 也就是发出通知了
 		listeners.environmentPrepared(bootstrapContext, environment);
+		// 将默认的配置给放置到最后, 这里先将默认的配置给移除, 再将这些配置给加入至这个list的最后
 		DefaultPropertiesPropertySource.moveToEnd(environment);
 		Assert.state(!environment.containsProperty("spring.main.environment-prefix"),
 				"Environment prefix cannot be set via properties.");
+		// 绑定环境到应用中去
 		bindToSpringApplication(environment);
 		if (!this.isCustomEnvironment) {
+			// 转换上下文
 			environment = convertEnvironment(environment);
 		}
+		// 如果有 attach 到 environment 上的 MutablePropertySources ，则添加到 environment 的 PropertySource 中。
 		ConfigurationPropertySources.attach(environment);
 		return environment;
 	}
@@ -373,39 +400,55 @@ public class SpringApplication {
 	private void prepareContext(DefaultBootstrapContext bootstrapContext, ConfigurableApplicationContext context,
 			ConfigurableEnvironment environment, SpringApplicationRunListeners listeners,
 			ApplicationArguments applicationArguments, Banner printedBanner) {
+		// 设置环境, 参数
 		context.setEnvironment(environment);
+		// 设置几个属性到上下文中去, 这里是给用户一个设置的机会
 		postProcessApplicationContext(context);
+		// 应用初始化器ApplicationContextInitializer
 		applyInitializers(context);
+		// 通知SpringApplicationRunListener数组, 上下文已经准备好了
 		listeners.contextPrepared(context);
+		// 关掉上下文
 		bootstrapContext.close(context);
 		if (this.logStartupInfo) {
+			// 打印日志
+			// 打印在那个pid上启动的
 			logStartupInfo(context.getParent() == null);
+			// 打印你所选择的环境, pro, test, dev?
 			logStartupProfileInfo(context);
 		}
 		// Add boot specific singleton beans
 		ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
+		// 设置beanFactory的属性
 		beanFactory.registerSingleton("springApplicationArguments", applicationArguments);
 		if (printedBanner != null) {
 			beanFactory.registerSingleton("springBootBanner", printedBanner);
 		}
 		if (beanFactory instanceof AbstractAutowireCapableBeanFactory) {
+			// 循环引用
 			((AbstractAutowireCapableBeanFactory) beanFactory).setAllowCircularReferences(this.allowCircularReferences);
 			if (beanFactory instanceof DefaultListableBeanFactory) {
+				// 可以覆盖
 				((DefaultListableBeanFactory) beanFactory)
 						.setAllowBeanDefinitionOverriding(this.allowBeanDefinitionOverriding);
 			}
 		}
 		if (this.lazyInitialization) {
+			// 懒加载的处理器
 			context.addBeanFactoryPostProcessor(new LazyInitializationBeanFactoryPostProcessor());
 		}
 		// Load the sources
 		Set<Object> sources = getAllSources();
 		Assert.notEmpty(sources, "Sources must not be empty");
+		// 加载BeanDefinition
+		// 这里可以回头看spring的相关文章
 		load(context, sources.toArray(new Object[0]));
+		// 通知SpringApplicationRunListener的数组, Spring容器加载完成
 		listeners.contextLoaded(context);
 	}
 
 	private void refreshContext(ConfigurableApplicationContext context) {
+		// 注册钩子
 		if (this.registerShutdownHook) {
 			shutdownHook.registerApplicationContext(context);
 		}
@@ -417,6 +460,12 @@ public class SpringApplication {
 				System.getProperty(SYSTEM_PROPERTY_JAVA_AWT_HEADLESS, Boolean.toString(this.headless)));
 	}
 
+	/**
+	 * 这里也是挺有意思, SpringApplicationRunListeners它去包含很多的SpringApplicationRunListener
+	 *
+	 * @param args
+	 * @return
+	 */
 	private SpringApplicationRunListeners getRunListeners(String[] args) {
 		Class<?>[] types = new Class<?>[] { SpringApplication.class, String[].class };
 		return new SpringApplicationRunListeners(logger,
@@ -431,9 +480,13 @@ public class SpringApplication {
 	private <T> Collection<T> getSpringFactoriesInstances(Class<T> type, Class<?>[] parameterTypes, Object... args) {
 		ClassLoader classLoader = getClassLoader();
 		// Use names and ensure unique to protect against duplicates
+		// 找到这些名称, 从这些文件里加载META-INF/spring.factories
 		Set<String> names = new LinkedHashSet<>(SpringFactoriesLoader.loadFactoryNames(type, classLoader));
+		// 创建实例
 		List<T> instances = createSpringFactoriesInstances(type, parameterTypes, classLoader, args, names);
+		// 排序
 		AnnotationAwareOrderComparator.sort(instances);
+		// 返回
 		return instances;
 	}
 
@@ -458,14 +511,17 @@ public class SpringApplication {
 
 	private ConfigurableEnvironment getOrCreateEnvironment() {
 		if (this.environment != null) {
+			// 如果已经存在, 则直接返回
 			return this.environment;
 		}
+		// 不存在, 则依据webApplicationType类型, 进行创建
 		switch (this.webApplicationType) {
 		case SERVLET:
 			return new ApplicationServletEnvironment();
 		case REACTIVE:
 			return new ApplicationReactiveWebEnvironment();
 		default:
+			// 所以我们创建的是这个
 			return new ApplicationEnvironment();
 		}
 	}
@@ -483,9 +539,13 @@ public class SpringApplication {
 	 */
 	protected void configureEnvironment(ConfigurableEnvironment environment, String[] args) {
 		if (this.addConversionService) {
+			// <1.1> 设置 environment 的 conversionService 属性
 			environment.setConversionService(new ApplicationConversionService());
 		}
+		// <1.2> 增加 environment 的 PropertySource 属性源
 		configurePropertySources(environment, args);
+		// <1.3> 配置 environment 的 activeProfiles 属性
+		// 空实现
 		configureProfiles(environment, args);
 	}
 
@@ -499,19 +559,29 @@ public class SpringApplication {
 	protected void configurePropertySources(ConfigurableEnvironment environment, String[] args) {
 		MutablePropertySources sources = environment.getPropertySources();
 		if (!CollectionUtils.isEmpty(this.defaultProperties)) {
+			// 配置的 defaultProperties
 			DefaultPropertiesPropertySource.addOrMerge(this.defaultProperties, sources);
 		}
+		// 来自启动参数
 		if (this.addCommandLineProperties && args.length > 0) {
 			String name = CommandLinePropertySource.COMMAND_LINE_PROPERTY_SOURCE_NAME;
 			if (sources.contains(name)) {
+				// 如果配置中已经有这个属性了, 那么进行替换
+				// 将已经有的属性给拿出来
 				PropertySource<?> source = sources.get(name);
+				// 那么新建一个属性
 				CompositePropertySource composite = new CompositePropertySource(name);
+				// 再将这个命令行的属性给设置进去
+				// SimpleCommandLinePropertySource它持有了参数
 				composite.addPropertySource(
 						new SimpleCommandLinePropertySource("springApplicationCommandLineArgs", args));
+				// 组合属性, 又将这个老的属性给保存起来了
 				composite.addPropertySource(source);
+				// 替换
 				sources.replace(name, composite);
 			}
 			else {
+				// 如果不存在, 那么将这个参数加入进去
 				sources.addFirst(new SimpleCommandLinePropertySource(args));
 			}
 		}
@@ -607,6 +677,7 @@ public class SpringApplication {
 			Class<?> requiredType = GenericTypeResolver.resolveTypeArgument(initializer.getClass(),
 					ApplicationContextInitializer.class);
 			Assert.isInstanceOf(requiredType, context, "Unable to call initializer.");
+			// 逐个的调用每个初始化器
 			initializer.initialize(context);
 		}
 	}
@@ -662,16 +733,22 @@ public class SpringApplication {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Loading source " + StringUtils.arrayToCommaDelimitedString(sources));
 		}
+		// BeanDefinitionLoader BeanDefinitionLoader加载器
 		BeanDefinitionLoader loader = createBeanDefinitionLoader(getBeanDefinitionRegistry(context), sources);
+		// 这里的名称生成器, 是没有的, 但是呢, 我们可以给你一个可以设置的机会
+		// 而默认使用的是AnnotationBeanNameGenerator
 		if (this.beanNameGenerator != null) {
 			loader.setBeanNameGenerator(this.beanNameGenerator);
 		}
+		// 这个也是没有的
 		if (this.resourceLoader != null) {
 			loader.setResourceLoader(this.resourceLoader);
 		}
+		// 这个也是没有的
 		if (this.environment != null) {
 			loader.setEnvironment(this.environment);
 		}
+		// 真正的去加载类去了
 		loader.load();
 	}
 
@@ -719,6 +796,7 @@ public class SpringApplication {
 	 * @return the {@link BeanDefinitionLoader} that will be used to load beans
 	 */
 	protected BeanDefinitionLoader createBeanDefinitionLoader(BeanDefinitionRegistry registry, Object[] sources) {
+		// BeandDefinitionLoader加载器
 		return new BeanDefinitionLoader(registry, sources);
 	}
 
@@ -1361,8 +1439,11 @@ public class SpringApplication {
 	}
 
 	private static <E> Set<E> asUnmodifiableOrderedSet(Collection<E> elements) {
+		// 用list包住, 所有的元素
 		List<E> list = new ArrayList<>(elements);
+		// 一个默认的比较器
 		list.sort(AnnotationAwareOrderComparator.INSTANCE);
+		// 再用hashset再来包住list
 		return new LinkedHashSet<>(list);
 	}
 

@@ -50,10 +50,13 @@ public abstract class Launcher {
 	 */
 	protected void launch(String[] args) throws Exception {
 		if (!isExploded()) {
+			// 调用jarFile的方法, 注册boot自定义的URLStreamHandler实现类, 用于jar包的加载读取
 			JarFile.registerUrlProtocolHandler();
 		}
+		// 调用自身的方法, 创建自定义的ClassLoader, 用于从jar包中加载类
 		ClassLoader classLoader = createClassLoader(getClassPathArchivesIterator());
 		String jarMode = System.getProperty("jarmode");
+		// 这里就会获取我们的启动类, 因为这里, 一般情况下, 我们是不会设置jarmode的
 		String launchClass = (jarMode != null && !jarMode.isEmpty()) ? JAR_MODE_LAUNCHER : getMainClass();
 		launch(args, launchClass, classLoader);
 	}
@@ -156,6 +159,10 @@ public abstract class Launcher {
 		if (path == null) {
 			throw new IllegalStateException("Unable to determine code source archive");
 		}
+		// 这里的root是什么?
+		// 为jar包的绝对地址, 也就是说创建JarFileArchive对象, 原因是, Launcher所在包为org下, 它的目录
+		// 当然为jar包的绝对路径
+		// C:\work_space\github\spring-boot-demo\demo-admin\admin-server\target\xx.jar
 		File root = new File(path);
 		if (!root.exists()) {
 			throw new IllegalStateException("Unable to determine code source archive from " + root);

@@ -297,6 +297,8 @@ public class JarFile extends AbstractJarFile implements Iterable<java.util.jar.J
 	 * @param entry the zip entry
 	 * @return a {@link JarFile} for the entry
 	 * @throws IOException if the nested jar file cannot be read
+	 *
+	 * 主要增强支持对内嵌jar包的获取
 	 */
 	public synchronized JarFile getNestedJarFile(JarEntry entry) throws IOException {
 		try {

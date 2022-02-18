@@ -54,8 +54,10 @@ class SpringApplicationRunListeners {
 
 	void starting(ConfigurableBootstrapContext bootstrapContext, Class<?> mainApplicationClass) {
 		doWithListeners("spring.boot.application.starting", (listener) -> listener.starting(bootstrapContext),
+				// 这里为defaultStartUp
 				(step) -> {
 					if (mainApplicationClass != null) {
+						// 打个标签?
 						step.tag("mainApplicationClass", mainApplicationClass.getName());
 					}
 				});
@@ -117,6 +119,7 @@ class SpringApplicationRunListeners {
 	private void doWithListeners(String stepName, Consumer<SpringApplicationRunListener> listenerAction,
 			Consumer<StartupStep> stepAction) {
 		StartupStep step = this.applicationStartup.start(stepName);
+		// 每一个监听器去执行动作listenerAction
 		this.listeners.forEach(listenerAction);
 		if (stepAction != null) {
 			stepAction.accept(step);

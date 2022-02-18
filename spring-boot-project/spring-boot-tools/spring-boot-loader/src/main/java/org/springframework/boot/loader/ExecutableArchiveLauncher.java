@@ -89,8 +89,10 @@ public abstract class ExecutableArchiveLauncher extends Launcher {
 		Manifest manifest = this.archive.getManifest();
 		String mainClass = null;
 		if (manifest != null) {
+			// 这里就去MANIFEST.MF文件中读取start类
 			mainClass = manifest.getMainAttributes().getValue(START_CLASS_ATTRIBUTE);
 		}
+		// 这个main class就是要到文档中去读取, 否则这里就会报错了
 		if (mainClass == null) {
 			throw new IllegalStateException("No 'Start-Class' manifest entry specified in " + this);
 		}
@@ -119,6 +121,7 @@ public abstract class ExecutableArchiveLauncher extends Launcher {
 	@Override
 	protected Iterator<Archive> getClassPathArchivesIterator() throws Exception {
 		Archive.EntryFilter searchFilter = this::isSearchCandidate;
+		// 获取到一个一个的archive
 		Iterator<Archive> archives = this.archive.getNestedArchives(searchFilter,
 				(entry) -> isNestedArchive(entry) && !isEntryIndexed(entry));
 		if (isPostProcessingClassPathArchives()) {

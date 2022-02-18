@@ -32,10 +32,13 @@ import org.springframework.boot.loader.archive.Archive.EntryFilter;
  */
 public class JarLauncher extends ExecutableArchiveLauncher {
 
+	// 给到另外一则去回调这个方法, 一个属性, 也可以这么处理, 这里也是挺有意思
 	static final EntryFilter NESTED_ARCHIVE_ENTRY_FILTER = (entry) -> {
 		if (entry.isDirectory()) {
+			// 整个目录被当成一个Archive对象
 			return entry.getName().equals("BOOT-INF/classes/");
 		}
+		// 里面的每个jar包, 被当成一个Archive对象
 		return entry.getName().startsWith("BOOT-INF/lib/");
 	};
 
@@ -53,6 +56,8 @@ public class JarLauncher extends ExecutableArchiveLauncher {
 
 	@Override
 	protected boolean isNestedArchive(Archive.Entry entry) {
+		// 这里的目的, 就是为了获得BOOT-INF/lib下的jar包及BOOT-INF/classes下的类
+		// 如果符合了才行
 		return NESTED_ARCHIVE_ENTRY_FILTER.matches(entry);
 	}
 
