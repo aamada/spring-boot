@@ -47,6 +47,10 @@ import org.springframework.util.StringUtils;
  * @author Dave Syer
  * @author Oliver Gierke
  * @since 1.0.0
+ *
+ *
+ * 自动配置的包扫描
+ * 它里面有挺多的内部类， 就是方便自己使用的
  */
 public abstract class AutoConfigurationPackages {
 
@@ -92,10 +96,13 @@ public abstract class AutoConfigurationPackages {
 	 */
 	public static void register(BeanDefinitionRegistry registry, String... packageNames) {
 		if (registry.containsBeanDefinition(BEAN)) {
+			// 如果有这个类， 那么从注册器中将这个bean拿取出来
+			// 再将这个包路径放入进去bean定义中去
 			BasePackagesBeanDefinition beanDefinition = (BasePackagesBeanDefinition) registry.getBeanDefinition(BEAN);
 			beanDefinition.addBasePackages(packageNames);
 		}
 		else {
+			// 直接注册一个新的bean定义， 再把这些包名， 给放置进去
 			registry.registerBeanDefinition(BEAN, new BasePackagesBeanDefinition(packageNames));
 		}
 	}
@@ -103,6 +110,8 @@ public abstract class AutoConfigurationPackages {
 	/**
 	 * {@link ImportBeanDefinitionRegistrar} to store the base package from the importing
 	 * configuration.
+	 *
+	 * 包在包从import扫描出来的配置
 	 */
 	static class Registrar implements ImportBeanDefinitionRegistrar, DeterminableImports {
 
@@ -120,19 +129,26 @@ public abstract class AutoConfigurationPackages {
 
 	/**
 	 * Wrapper for a package import.
+	 * 就是简单的包装一个引入的包路径
 	 */
 	private static final class PackageImports {
 
+		// 包路径集合
 		private final List<String> packageNames;
 
 		PackageImports(AnnotationMetadata metadata) {
+			// 获取注解的元数据信息
 			AnnotationAttributes attributes = AnnotationAttributes
 					.fromMap(metadata.getAnnotationAttributes(AutoConfigurationPackage.class.getName(), false));
 			List<String> packageNames = new ArrayList<>(Arrays.asList(attributes.getStringArray("basePackages")));
 			for (Class<?> basePackageClass : attributes.getClassArray("basePackageClasses")) {
+				// 获得属性
+				// 并把这个包路径给放入至包list中去
 				packageNames.add(basePackageClass.getPackage().getName());
 			}
 			if (packageNames.isEmpty()) {
+				// 如果没有配置的话， 那么就使用这个配置类所在的包路径
+				// 这里就是为什么， springApplication是在最外面的位置
 				packageNames.add(ClassUtils.getPackageName(metadata.getClassName()));
 			}
 			this.packageNames = Collections.unmodifiableList(packageNames);
@@ -164,9 +180,11 @@ public abstract class AutoConfigurationPackages {
 
 	/**
 	 * Holder for the base package (name may be null to indicate no scanning).
+	 * 静态内部类, 也就是将那些路径给包装一下
 	 */
 	static final class BasePackages {
 
+		// 包路径
 		private final List<String> packages;
 
 		private boolean loggedBasePackageInfo;
