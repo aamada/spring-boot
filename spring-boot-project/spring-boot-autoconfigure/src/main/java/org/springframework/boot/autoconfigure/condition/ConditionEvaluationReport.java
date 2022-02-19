@@ -182,10 +182,13 @@ public final class ConditionEvaluationReport {
 		synchronized (beanFactory) {
 			ConditionEvaluationReport report;
 			if (beanFactory.containsSingleton(BEAN_NAME)) {
+				// 如果包含的话， 那么直接把这个bean给拿取出来
 				report = beanFactory.getBean(BEAN_NAME, ConditionEvaluationReport.class);
 			}
 			else {
+				// 如果没有的话， 那么新建一个
 				report = new ConditionEvaluationReport();
+				// 再将这个bean给注册进去
 				beanFactory.registerSingleton(BEAN_NAME, report);
 			}
 			locateParent(beanFactory.getParentBeanFactory(), report);
@@ -194,7 +197,9 @@ public final class ConditionEvaluationReport {
 	}
 
 	private static void locateParent(BeanFactory beanFactory, ConditionEvaluationReport report) {
+		// 这个beanFactory也有个爹， 那么到他爹里面来找到这个bean， 而且有的话， 如果没有的话， 算了
 		if (beanFactory != null && report.parent == null && beanFactory.containsBean(BEAN_NAME)) {
+			// 给它设置一个爹
 			report.parent = beanFactory.getBean(BEAN_NAME, ConditionEvaluationReport.class);
 		}
 	}

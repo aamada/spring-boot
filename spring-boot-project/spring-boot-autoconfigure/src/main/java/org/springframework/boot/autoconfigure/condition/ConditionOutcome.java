@@ -21,6 +21,8 @@ import org.springframework.util.ObjectUtils;
 
 /**
  * Outcome for a condition match, including log message.
+ * 1, 是否符合
+ * 2, 以及日志消息
  *
  * @author Phillip Webb
  * @since 1.0.0
@@ -28,8 +30,14 @@ import org.springframework.util.ObjectUtils;
  */
 public class ConditionOutcome {
 
+	/**
+	 * 是否符合条件
+	 */
 	private final boolean match;
 
+	/**
+	 * 消息
+	 */
 	private final ConditionMessage message;
 
 	/**

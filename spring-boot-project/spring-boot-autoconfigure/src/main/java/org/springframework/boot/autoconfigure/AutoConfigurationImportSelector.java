@@ -132,7 +132,7 @@ public class AutoConfigurationImportSelector implements DeferredImportSelector, 
 		checkExcludedClasses(configurations, exclusions);
 		// 移除
 		configurations.removeAll(exclusions);
-		// 获得过滤器去过滤配置
+		// 获得过滤器去过滤一些不符全条件的配置
 		configurations = getConfigurationClassFilter().filter(configurations);
 		// 触发自动引用配置的事件
 		fireAutoConfigurationImportEvents(configurations, exclusions);

@@ -32,11 +32,16 @@ import org.springframework.util.StringUtils;
  * A message associated with a {@link ConditionOutcome}. Provides a fluent builder style
  * API to encourage consistency across all condition messages.
  *
+ * 一个消息， 也就是一个字符串， 它也搞出这么多的东西， 你服不？
+ *
  * @author Phillip Webb
  * @since 1.4.1
  */
 public final class ConditionMessage {
 
+	/**
+	 * 一条简单的字符串， 它也要使用一个类来装吗？
+	 */
 	private final String message;
 
 	private ConditionMessage() {
@@ -54,6 +59,8 @@ public final class ConditionMessage {
 	/**
 	 * Return {@code true} if the message is empty.
 	 * @return if the message is empty
+	 *
+	 * 这个消息是否为空
 	 */
 	public boolean isEmpty() {
 		return !StringUtils.hasLength(this.message);
@@ -85,6 +92,8 @@ public final class ConditionMessage {
 	 * message.
 	 * @param message the message to append
 	 * @return a new {@link ConditionMessage} instance
+	 *
+	 * append， 拼接后， 新建一个message对象
 	 */
 	public ConditionMessage append(String message) {
 		if (!StringUtils.hasLength(message)) {
@@ -119,6 +128,8 @@ public final class ConditionMessage {
 	 * @return a {@link Builder} builder
 	 * @see #andCondition(Class, Object...)
 	 * @see #forCondition(String, Object...)
+	 *
+	 * 字符串
 	 */
 	public Builder andCondition(String condition, Object... details) {
 		Assert.notNull(condition, "Condition must not be null");
@@ -132,6 +143,8 @@ public final class ConditionMessage {
 	/**
 	 * Factory method to return a new empty {@link ConditionMessage}.
 	 * @return a new empty {@link ConditionMessage}
+	 *
+	 * 一个空的消息
 	 */
 	public static ConditionMessage empty() {
 		return new ConditionMessage();
@@ -148,6 +161,7 @@ public final class ConditionMessage {
 		if (ObjectUtils.isEmpty(args)) {
 			return new ConditionMessage(message);
 		}
+		// 单条消息
 		return new ConditionMessage(String.format(message, args));
 	}
 
@@ -156,6 +170,8 @@ public final class ConditionMessage {
 	 * messages.
 	 * @param messages the source messages (may be {@code null})
 	 * @return a new {@link ConditionMessage} instance
+	 *
+	 * 很多的消息
 	 */
 	public static ConditionMessage of(Collection<? extends ConditionMessage> messages) {
 		ConditionMessage result = new ConditionMessage();
@@ -195,6 +211,8 @@ public final class ConditionMessage {
 
 	/**
 	 * Builder used to create a {@link ConditionMessage} for a condition.
+	 *
+	 * 我肏， 它还自己搞了一个Builder类， 真的是牛逼
 	 */
 	public final class Builder {
 
