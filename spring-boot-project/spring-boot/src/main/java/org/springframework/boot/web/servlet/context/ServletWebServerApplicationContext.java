@@ -157,6 +157,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	protected void onRefresh() {
 		super.onRefresh();
 		try {
+			// 完成webserver的创建， 但是不包括启动
 			createWebServer();
 		}
 		catch (Throwable ex) {
@@ -178,12 +179,17 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 		if (webServer == null && servletContext == null) {
 			StartupStep createWebServer = this.getApplicationStartup().start("spring.boot.webserver.create");
 			// TomcatServletWebServerFactory从这里来的, 从容器里来的, 但是什么时候给放入至容器里去的呢?
+			// ServletWebServerFactoryConfiguration它是应用自动配置时， 将这个类给加载进来的, 此时就可以去实例化它了
 			ServletWebServerFactory factory = getWebServerFactory();
+			// 打个标签啥的
 			createWebServer.tag("factory", factory.getClass().toString());
+			// 注意这里的getSelfInitializer()方法
 			this.webServer = factory.getWebServer(getSelfInitializer());
 			createWebServer.end();
+			// 注册一个平滑关闭的类， 将webserver给包装起来
 			getBeanFactory().registerSingleton("webServerGracefulShutdown",
 					new WebServerGracefulShutdownLifecycle(this.webServer));
+			// 管理生命周期的东东
 			getBeanFactory().registerSingleton("webServerStartStop",
 					new WebServerStartStopLifecycle(this, this.webServer));
 		}
@@ -215,6 +221,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 			throw new ApplicationContextException("Unable to start ServletWebServerApplicationContext due to multiple "
 					+ "ServletWebServerFactory beans : " + StringUtils.arrayToCommaDelimitedString(beanNames));
 		}
+		// 这里去获取这个bean， 那么就会实例化它了
 		return getBeanFactory().getBean(beanNames[0], ServletWebServerFactory.class);
 	}
 
@@ -226,6 +233,8 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	 * @see #prepareWebApplicationContext(ServletContext)
 	 */
 	private org.springframework.boot.web.servlet.ServletContextInitializer getSelfInitializer() {
+		// 注意这里返回的只是一个表达式， 而里面真正的内容， 其实并没有调用
+		// 它要到下一步才会真正的调用的
 		return this::selfInitialize;
 	}
 
@@ -263,6 +272,7 @@ public class ServletWebServerApplicationContext extends GenericWebApplicationCon
 	 * @return the servlet initializer beans
 	 */
 	protected Collection<ServletContextInitializer> getServletContextInitializerBeans() {
+		// 到这里啦~
 		return new ServletContextInitializerBeans(getBeanFactory());
 	}
 
