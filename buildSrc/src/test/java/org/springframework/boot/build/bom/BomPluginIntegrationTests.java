@@ -72,13 +72,11 @@ class BomPluginIntegrationTests {
 			NodeAssert dependency = pom.nodeAtPath("//dependencyManagement/dependencies/dependency[1]");
 			assertThat(dependency).textAtPath("groupId").isEqualTo("org.apache.activemq");
 			assertThat(dependency).textAtPath("artifactId").isEqualTo("activemq-amqp");
-			assertThat(dependency).textAtPath("version").isEqualTo("${activemq.version}");
 			assertThat(dependency).textAtPath("scope").isNullOrEmpty();
 			assertThat(dependency).textAtPath("type").isNullOrEmpty();
 			dependency = pom.nodeAtPath("//dependencyManagement/dependencies/dependency[2]");
 			assertThat(dependency).textAtPath("groupId").isEqualTo("org.apache.activemq");
 			assertThat(dependency).textAtPath("artifactId").isEqualTo("activemq-blueprint");
-			assertThat(dependency).textAtPath("version").isEqualTo("${activemq.version}");
 			assertThat(dependency).textAtPath("scope").isNullOrEmpty();
 			assertThat(dependency).textAtPath("type").isNullOrEmpty();
 		});
@@ -132,7 +130,6 @@ class BomPluginIntegrationTests {
 			NodeAssert dependency = pom.nodeAtPath("//dependencyManagement/dependencies/dependency");
 			assertThat(dependency).textAtPath("groupId").isEqualTo("com.fasterxml.jackson");
 			assertThat(dependency).textAtPath("artifactId").isEqualTo("jackson-bom");
-			assertThat(dependency).textAtPath("version").isEqualTo("${jackson-bom.version}");
 			assertThat(dependency).textAtPath("scope").isEqualTo("import");
 			assertThat(dependency).textAtPath("type").isEqualTo("pom");
 		});
@@ -161,7 +158,6 @@ class BomPluginIntegrationTests {
 			NodeAssert dependency = pom.nodeAtPath("//dependencyManagement/dependencies/dependency");
 			assertThat(dependency).textAtPath("groupId").isEqualTo("mysql");
 			assertThat(dependency).textAtPath("artifactId").isEqualTo("mysql-connector-java");
-			assertThat(dependency).textAtPath("version").isEqualTo("${mysql.version}");
 			assertThat(dependency).textAtPath("scope").isNullOrEmpty();
 			assertThat(dependency).textAtPath("type").isNullOrEmpty();
 			NodeAssert exclusion = dependency.nodeAtPath("exclusions/exclusion");
@@ -193,7 +189,6 @@ class BomPluginIntegrationTests {
 			NodeAssert dependency = pom.nodeAtPath("//dependencyManagement/dependencies/dependency");
 			assertThat(dependency).textAtPath("groupId").isEqualTo("org.elasticsearch.distribution.integ-test-zip");
 			assertThat(dependency).textAtPath("artifactId").isEqualTo("elasticsearch");
-			assertThat(dependency).textAtPath("version").isEqualTo("${elasticsearch.version}");
 			assertThat(dependency).textAtPath("scope").isNullOrEmpty();
 			assertThat(dependency).textAtPath("type").isEqualTo("zip");
 			assertThat(dependency).nodeAtPath("exclusions").isNull();

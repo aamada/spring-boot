@@ -90,6 +90,7 @@ class SharedMetadataReaderFactoryContextInitializer
 
 		@Override
 		public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+			// 它居然是空实现
 		}
 
 		@Override
@@ -100,9 +101,11 @@ class SharedMetadataReaderFactoryContextInitializer
 
 		private void register(BeanDefinitionRegistry registry) {
 			if (!registry.containsBeanDefinition(BEAN_NAME)) {
+				// 如果注册表中没有这个bean
 				BeanDefinition definition = BeanDefinitionBuilder
 						.rootBeanDefinition(SharedMetadataReaderFactoryBean.class, SharedMetadataReaderFactoryBean::new)
 						.getBeanDefinition();
+				// 就注册一个SharedMetadataReaderFactoryBean这么一个bean
 				registry.registerBeanDefinition(BEAN_NAME, definition);
 			}
 		}

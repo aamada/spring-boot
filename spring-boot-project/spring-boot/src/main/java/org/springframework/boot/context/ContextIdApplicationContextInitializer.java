@@ -51,16 +51,22 @@ public class ContextIdApplicationContextInitializer
 
 	@Override
 	public void initialize(ConfigurableApplicationContext applicationContext) {
+		// 获得一个contextId
 		ContextId contextId = getContextId(applicationContext);
+		// 把这个id设置为applicationContext的id
 		applicationContext.setId(contextId.getId());
+		// 再将这个contextId给注册到容器中去
 		applicationContext.getBeanFactory().registerSingleton(ContextId.class.getName(), contextId);
 	}
 
 	private ContextId getContextId(ConfigurableApplicationContext applicationContext) {
+		// 拿到它爹
 		ApplicationContext parent = applicationContext.getParent();
 		if (parent != null && parent.containsBean(ContextId.class.getName())) {
+			// 拿到它爹 的contextId, 用这个id去生成一个儿子id
 			return parent.getBean(ContextId.class).createChildId();
 		}
+		// 否则的话新建一个
 		return new ContextId(getApplicationId(applicationContext.getEnvironment()));
 	}
 

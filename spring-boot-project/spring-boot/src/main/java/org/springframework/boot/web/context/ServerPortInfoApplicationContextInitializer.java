@@ -54,12 +54,16 @@ public class ServerPortInfoApplicationContextInitializer implements
 
 	@Override
 	public void initialize(ConfigurableApplicationContext applicationContext) {
+		// 将自己给加入至监听器中去
 		applicationContext.addApplicationListener(this);
 	}
 
 	@Override
 	public void onApplicationEvent(WebServerInitializedEvent event) {
+		// web服务器初始化时的事件
+		// 属性名
 		String propertyName = "local." + getName(event.getApplicationContext()) + ".port";
+		// 设置端口号
 		setPortProperty(event.getApplicationContext(), propertyName, event.getWebServer().getPort());
 	}
 

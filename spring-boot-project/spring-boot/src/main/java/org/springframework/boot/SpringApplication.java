@@ -294,8 +294,9 @@ public class SpringApplication {
 		ConfigurableApplicationContext context = null;
 		// 设置awt的东西, 不懂
 		configureHeadlessProperty();
-		// SpringApplicationRunListener很多的这种监听器
+		// SpringApplicationRunListener有很多的这种监听器
 		// 注意此处是为SpringApplicationRunListener, 而不是一般的监听器ApplicationListener
+		// 像是一个观察者模式
 		SpringApplicationRunListeners listeners = getRunListeners(args);
 		// 每到一步, 通知一下, 广播开始事件
 		listeners.starting(bootstrapContext, this.mainApplicationClass);

@@ -50,9 +50,12 @@ public class DelegatingApplicationContextInitializer
 
 	@Override
 	public void initialize(ConfigurableApplicationContext context) {
+		// 获取环境
 		ConfigurableEnvironment environment = context.getEnvironment();
+		// 获得初始化类
 		List<Class<?>> initializerClasses = getInitializerClasses(environment);
 		if (!initializerClasses.isEmpty()) {
+			// 如果不为空的话, 那么调用初始化类
 			applyInitializerClasses(context, initializerClasses);
 		}
 	}
@@ -71,6 +74,7 @@ public class DelegatingApplicationContextInitializer
 	private Class<?> getInitializerClass(String className) throws LinkageError {
 		try {
 			Class<?> initializerClass = ClassUtils.forName(className, ClassUtils.getDefaultClassLoader());
+			// ApplicationContextInitializer确定它是
 			Assert.isAssignable(ApplicationContextInitializer.class, initializerClass);
 			return initializerClass;
 		}
