@@ -52,7 +52,9 @@ class SpringApplicationBannerPrinter {
 	private final Banner fallbackBanner;
 
 	SpringApplicationBannerPrinter(ResourceLoader resourceLoader, Banner fallbackBanner) {
+		// 资源加载器
 		this.resourceLoader = resourceLoader;
+		// 后备的banner
 		this.fallbackBanner = fallbackBanner;
 	}
 

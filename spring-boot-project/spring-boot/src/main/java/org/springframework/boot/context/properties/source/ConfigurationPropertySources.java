@@ -85,7 +85,9 @@ public final class ConfigurationPropertySources {
 	 */
 	public static void attach(Environment environment) {
 		Assert.isInstanceOf(ConfigurableEnvironment.class, environment);
+		// 最基本的属性容器
 		MutablePropertySources sources = ((ConfigurableEnvironment) environment).getPropertySources();
+		// configurationProperties
 		PropertySource<?> attached = getAttached(sources);
 		if (attached != null && attached.getSource() != sources) {
 			sources.remove(ATTACHED_PROPERTY_SOURCE_NAME);
@@ -98,6 +100,7 @@ public final class ConfigurationPropertySources {
 	}
 
 	static PropertySource<?> getAttached(MutablePropertySources sources) {
+		// 从source中获取configurationProperties
 		return (sources != null) ? sources.get(ATTACHED_PROPERTY_SOURCE_NAME) : null;
 	}
 

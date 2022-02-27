@@ -119,8 +119,11 @@ public class AnnotationConfigServletWebServerApplicationContext extends ServletW
 	 */
 	@Override
 	public void setEnvironment(ConfigurableEnvironment environment) {
+		// 调用到这里, 将环境设置到它爹, AbstractEnvironment中去
 		super.setEnvironment(environment);
+		// 设置到读取器中去
 		this.reader.setEnvironment(environment);
+		// 设置到扫描器中去
 		this.scanner.setEnvironment(environment);
 	}
 

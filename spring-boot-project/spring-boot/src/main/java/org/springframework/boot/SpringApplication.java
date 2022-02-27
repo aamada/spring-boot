@@ -352,13 +352,13 @@ public class SpringApplication {
 	private ConfigurableEnvironment prepareEnvironment(SpringApplicationRunListeners listeners,
 			DefaultBootstrapContext bootstrapContext, ApplicationArguments applicationArguments) {
 		// Create and configure the environment
-		// 创建上下文
+		// 创建上下文, 这里会得到一些系统变量, defaultProfiles与activeProfiles
 		ConfigurableEnvironment environment = getOrCreateEnvironment();
 		// 配置上下文
 		configureEnvironment(environment, applicationArguments.getSourceArgs());
-		// 配置属性
+		// 配置属性, configurationProperties
 		ConfigurationPropertySources.attach(environment);
-		// 监听器准备好了环境, 也就是发出通知了
+		// 监听器准备好了环境, 也就是发出通知了, 这里就有料了, 可以深究
 		listeners.environmentPrepared(bootstrapContext, environment);
 		// 将默认的配置给放置到最后, 这里先将默认的配置给移除, 再将这些配置给加入至这个list的最后
 		DefaultPropertiesPropertySource.moveToEnd(environment);
@@ -398,10 +398,12 @@ public class SpringApplication {
 		}
 	}
 
+	// AnnotationConfigServletWebServerApplicationContext
+	// StandardServletEnvironment
 	private void prepareContext(DefaultBootstrapContext bootstrapContext, ConfigurableApplicationContext context,
 			ConfigurableEnvironment environment, SpringApplicationRunListeners listeners,
 			ApplicationArguments applicationArguments, Banner printedBanner) {
-		// 设置环境, 参数
+		// 设置环境, 参数, 阅读器, 浏览器
 		context.setEnvironment(environment);
 		// 设置几个属性到上下文中去, 这里是给用户一个设置的机会
 		postProcessApplicationContext(context);
@@ -518,6 +520,7 @@ public class SpringApplication {
 		// 不存在, 则依据webApplicationType类型, 进行创建
 		switch (this.webApplicationType) {
 		case SERVLET:
+			// 这个boot的
 			return new ApplicationServletEnvironment();
 		case REACTIVE:
 			return new ApplicationReactiveWebEnvironment();
@@ -539,8 +542,11 @@ public class SpringApplication {
 	 * @see #configurePropertySources(ConfigurableEnvironment, String[])
 	 */
 	protected void configureEnvironment(ConfigurableEnvironment environment, String[] args) {
+		// 这个值默认为true
 		if (this.addConversionService) {
 			// <1.1> 设置 environment 的 conversionService 属性
+			// 这里是新建了一个, 还没有放入全局使用的一个哦
+			// 之前这里写的一个是全局的, 这里是new了一个
 			environment.setConversionService(new ApplicationConversionService());
 		}
 		// <1.2> 增加 environment 的 PropertySource 属性源
@@ -558,14 +564,19 @@ public class SpringApplication {
 	 * @see #configureEnvironment(ConfigurableEnvironment, String[])
 	 */
 	protected void configurePropertySources(ConfigurableEnvironment environment, String[] args) {
+		// 这里就是前面, 生成的一个
 		MutablePropertySources sources = environment.getPropertySources();
+		// 这个什么时候会有值呢?如果我们自己设置的话
 		if (!CollectionUtils.isEmpty(this.defaultProperties)) {
+			// defaultProperties如果有设置
 			// 配置的 defaultProperties
 			DefaultPropertiesPropertySource.addOrMerge(this.defaultProperties, sources);
 		}
-		// 来自启动参数
+		// 来自启动参数, 如果我们自己配置了参数的话
 		if (this.addCommandLineProperties && args.length > 0) {
+			// commandLineArgs
 			String name = CommandLinePropertySource.COMMAND_LINE_PROPERTY_SOURCE_NAME;
+			// 如果之前的配置中, 已经有这个参数的话
 			if (sources.contains(name)) {
 				// 如果配置中已经有这个属性了, 那么进行替换
 				// 将已经有的属性给拿出来
@@ -602,6 +613,7 @@ public class SpringApplication {
 	private void configureIgnoreBeanInfo(ConfigurableEnvironment environment) {
 		if (System.getProperty(CachedIntrospectionResults.IGNORE_BEANINFO_PROPERTY_NAME) == null) {
 			Boolean ignore = environment.getProperty("spring.beaninfo.ignore", Boolean.class, Boolean.TRUE);
+			// spring.beaninfo.ignore
 			System.setProperty(CachedIntrospectionResults.IGNORE_BEANINFO_PROPERTY_NAME, ignore.toString());
 		}
 	}
@@ -620,11 +632,14 @@ public class SpringApplication {
 	}
 
 	private Banner printBanner(ConfigurableEnvironment environment) {
+		// 如果在之前, 我们有自己设置的模式
 		if (this.bannerMode == Banner.Mode.OFF) {
 			return null;
 		}
+		// 资源加载器
 		ResourceLoader resourceLoader = (this.resourceLoader != null) ? this.resourceLoader
 				: new DefaultResourceLoader(null);
+		// 打印bannder的东西
 		SpringApplicationBannerPrinter bannerPrinter = new SpringApplicationBannerPrinter(resourceLoader, this.banner);
 		if (this.bannerMode == Mode.LOG) {
 			return bannerPrinter.print(environment, this.mainApplicationClass, logger);
@@ -661,6 +676,7 @@ public class SpringApplication {
 				((DefaultResourceLoader) context).setClassLoader(this.resourceLoader.getClassLoader());
 			}
 		}
+		// 走这里, addConversionService=true
 		if (this.addConversionService) {
 			context.getBeanFactory().setConversionService(context.getEnvironment().getConversionService());
 		}
@@ -674,9 +690,11 @@ public class SpringApplication {
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected void applyInitializers(ConfigurableApplicationContext context) {
+		// 这个初始化器, 就是前面, 到配置文件中去获取的那些初始化器
 		for (ApplicationContextInitializer initializer : getInitializers()) {
 			Class<?> requiredType = GenericTypeResolver.resolveTypeArgument(initializer.getClass(),
 					ApplicationContextInitializer.class);
+			// 确定它是一个初始化器
 			Assert.isInstanceOf(requiredType, context, "Unable to call initializer.");
 			// 逐个的调用每个初始化器
 			initializer.initialize(context);

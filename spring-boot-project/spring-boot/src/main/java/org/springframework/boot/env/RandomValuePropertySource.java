@@ -146,17 +146,25 @@ public class RandomValuePropertySource extends PropertySource<Random> {
 	}
 
 	static void addToEnvironment(ConfigurableEnvironment environment, Log logger) {
+		// 从环境中拿到属性配置
 		MutablePropertySources sources = environment.getPropertySources();
+		// random
 		PropertySource<?> existing = sources.get(RANDOM_PROPERTY_SOURCE_NAME);
 		if (existing != null) {
+			// 如果资源里已经有了random, 那么直接返回
 			logger.trace("RandomValuePropertySource already present");
 			return;
 		}
+		// 新建一个RandomValuePropertySource, 自己新建一个随机值
 		RandomValuePropertySource randomSource = new RandomValuePropertySource(RANDOM_PROPERTY_SOURCE_NAME);
+		// systemEnvironment
 		if (sources.get(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME) != null) {
+			// 如果已经有了"系统环境"
+			// 那么把这个随机值, 放入至"系统环境"中去
 			sources.addAfter(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME, randomSource);
 		}
 		else {
+			// 如果没有systemEnvironment, 那么直接往source里放
 			sources.addLast(randomSource);
 		}
 		logger.trace("RandomValuePropertySource add to Environment");

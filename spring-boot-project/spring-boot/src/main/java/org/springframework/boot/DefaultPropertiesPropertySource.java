@@ -81,14 +81,21 @@ public class DefaultPropertiesPropertySource extends MapPropertySource {
 	 */
 	public static void addOrMerge(Map<String, Object> source, MutablePropertySources sources) {
 		if (!CollectionUtils.isEmpty(source)) {
+			// 如果设置的sourc不为空
 			Map<String, Object> resultingSource = new HashMap<>();
+			// 新建一个空的DefaultPropertiesPropertySource
 			DefaultPropertiesPropertySource propertySource = new DefaultPropertiesPropertySource(resultingSource);
+			// 如果前面new 的StardardServletEnvironment包含了设置的Profiles, defaultProperties
 			if (sources.contains(NAME)) {
+				// 合并
 				mergeIfPossible(source, sources, resultingSource);
+				// 替换
 				sources.replace(NAME, propertySource);
 			}
 			else {
+				// 如果没有的话, 那么把之前新建的, 再放入至在这里新建的
 				resultingSource.putAll(source);
+				// 都相互持有
 				sources.addLast(propertySource);
 			}
 		}
@@ -122,6 +129,7 @@ public class DefaultPropertiesPropertySource extends MapPropertySource {
 	 * @param propertySources the property sources to update
 	 */
 	public static void moveToEnd(MutablePropertySources propertySources) {
+		// defaultProperties
 		PropertySource<?> propertySource = propertySources.remove(NAME);
 		if (propertySource != null) {
 			propertySources.addLast(propertySource);

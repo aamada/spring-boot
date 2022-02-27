@@ -69,7 +69,9 @@ public class ApplicationConversionService extends FormattingConversionService {
 		if (embeddedValueResolver != null) {
 			setEmbeddedValueResolver(embeddedValueResolver);
 		}
+		// 配置一下那些转换器喽
 		configure(this);
+		// 不可修改
 		this.unmodifiable = unmodifiable;
 	}
 
@@ -180,11 +182,16 @@ public class ApplicationConversionService extends FormattingConversionService {
 	 * {@code null})
 	 */
 	public static ConversionService getSharedInstance() {
+		// 保存在局部变量中
 		ApplicationConversionService sharedInstance = ApplicationConversionService.sharedInstance;
+		// 如果这个为null的话
 		if (sharedInstance == null) {
+			// 同步
 			synchronized (ApplicationConversionService.class) {
 				sharedInstance = ApplicationConversionService.sharedInstance;
 				if (sharedInstance == null) {
+					// 二次判断
+					// 如果还是没有, 那么就新建一个
 					sharedInstance = new ApplicationConversionService(null, true);
 					ApplicationConversionService.sharedInstance = sharedInstance;
 				}
@@ -202,9 +209,16 @@ public class ApplicationConversionService extends FormattingConversionService {
 	 * ConversionService
 	 */
 	public static void configure(FormatterRegistry registry) {
+		// 添加默认的类转换器
 		DefaultConversionService.addDefaultConverters(registry);
+		// 格式化转换器
 		DefaultFormattingConversionService.addDefaultFormatters(registry);
+		// 上面有两个类, 是直接使用的, 而它们应该是不满足boot的需要, 所以这里又添加了一些转换器
+		// CharArray
+		// InetAddress
+		// IsoOffset
 		addApplicationFormatters(registry);
+		// 双新增了其它的一些转换器, 注意这些转换器里, 还可能还持有了它爹, 真他妈的爽
 		addApplicationConverters(registry);
 	}
 
@@ -248,6 +262,7 @@ public class ApplicationConversionService extends FormattingConversionService {
 	 */
 	public static void addDelimitedStringConverters(ConverterRegistry registry) {
 		ConversionService service = (ConversionService) registry;
+		// 界定符
 		registry.addConverter(new ArrayToDelimitedStringConverter(service));
 		registry.addConverter(new CollectionToDelimitedStringConverter(service));
 		registry.addConverter(new DelimitedStringToArrayConverter(service));

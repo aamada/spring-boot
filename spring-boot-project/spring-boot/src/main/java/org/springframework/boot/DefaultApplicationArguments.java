@@ -39,7 +39,9 @@ public class DefaultApplicationArguments implements ApplicationArguments {
 
 	public DefaultApplicationArguments(String... args) {
 		Assert.notNull(args, "Args must not be null");
+		// 新建一个命令行输入的属性资源
 		this.source = new Source(args);
+		// 输入的参数
 		this.args = args;
 	}
 
