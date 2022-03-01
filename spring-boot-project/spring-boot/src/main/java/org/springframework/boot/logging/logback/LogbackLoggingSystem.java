@@ -125,10 +125,13 @@ public class LogbackLoggingSystem extends Slf4JLoggingSystem {
 
 	@Override
 	public void initialize(LoggingInitializationContext initializationContext, String configLocation, LogFile logFile) {
+		// 日志上下文
 		LoggerContext loggerContext = getLoggerContext();
+		// 是否已经初始化了
 		if (isAlreadyInitialized(loggerContext)) {
 			return;
 		}
+		// 它爹初始化
 		super.initialize(initializationContext, configLocation, logFile);
 		loggerContext.getTurboFilterList().remove(FILTER);
 		markAsInitialized(loggerContext);

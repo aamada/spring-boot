@@ -42,7 +42,9 @@ public abstract class Slf4JLoggingSystem extends AbstractLoggingSystem {
 
 	@Override
 	public void beforeInitialize() {
+		// 父类初始化前调用, 为空实现
 		super.beforeInitialize();
+		// 配置jdk的日志桥接处理器
 		configureJdkLoggingBridgeHandler();
 	}
 

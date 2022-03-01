@@ -188,17 +188,24 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 
 	@Override
 	public boolean supportsEventType(ResolvableType resolvableType) {
+		// ApplicationStartingEvent.class,
+		// ApplicationEnvironmentPreparedEvent.class,
+		// ApplicationPreparedEvent.class,
+		// ContextClosedEvent.class,
+		// ApplicationFailedEvent.class
 		return isAssignableFrom(resolvableType.getRawClass(), EVENT_TYPES);
 	}
 
 	@Override
 	public boolean supportsSourceType(Class<?> sourceType) {
+		// 与supportsEventType是支持的类型
 		return isAssignableFrom(sourceType, SOURCE_TYPES);
 	}
 
 	private boolean isAssignableFrom(Class<?> type, Class<?>... supportedTypes) {
 		if (type != null) {
 			for (Class<?> supportedType : supportedTypes) {
+				// 它是这个类吗?
 				if (supportedType.isAssignableFrom(type)) {
 					return true;
 				}
@@ -207,8 +214,14 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 		return false;
 	}
 
+	// ApplicationStartingEvent.class,
+	// ApplicationEnvironmentPreparedEvent.class,
+	// ApplicationPreparedEvent.class,
+	// ContextClosedEvent.class,
+	// ApplicationFailedEvent.class
 	@Override
 	public void onApplicationEvent(ApplicationEvent event) {
+		// 不同类型的事件, 使用不同的处理方法, 而不是为了通用而通用, 或者是到这里, 已经是很底层了
 		if (event instanceof ApplicationStartingEvent) {
 			onApplicationStartingEvent((ApplicationStartingEvent) event);
 		}
@@ -233,6 +246,7 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 	}
 
 	private void onApplicationEnvironmentPreparedEvent(ApplicationEnvironmentPreparedEvent event) {
+		// SpringApplication
 		SpringApplication springApplication = event.getSpringApplication();
 		if (this.loggingSystem == null) {
 			this.loggingSystem = LoggingSystem.get(springApplication.getClassLoader());
@@ -241,7 +255,9 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 	}
 
 	private void onApplicationPreparedEvent(ApplicationPreparedEvent event) {
+		// 获取到工厂
 		ConfigurableListableBeanFactory beanFactory = event.getApplicationContext().getBeanFactory();
+		// springBootLoggingSystem
 		if (!beanFactory.containsBean(LOGGING_SYSTEM_BEAN_NAME)) {
 			beanFactory.registerSingleton(LOGGING_SYSTEM_BEAN_NAME, this.loggingSystem);
 		}
@@ -278,9 +294,13 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 			this.logFile.applyToSystemProperties();
 		}
 		this.loggerGroups = new LoggerGroups(DEFAULT_GROUP_LOGGERS);
+		// 初始化早期的日志等级
 		initializeEarlyLoggingLevel(environment);
+		// 初始化系统
 		initializeSystem(environment, this.loggingSystem, this.logFile);
+		// 初始化日志等级
 		initializeFinalLoggingLevels(environment, this.loggingSystem);
+		// 注册关闭钩子
 		registerShutdownHookIfNecessary(environment, this.loggingSystem);
 	}
 
@@ -306,8 +326,11 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 	}
 
 	private void initializeSystem(ConfigurableEnvironment environment, LoggingSystem system, LogFile logFile) {
+		// logging.config, 日志的配置文件
+		// 得到这个日志文件的地址
 		String logConfig = StringUtils.trimWhitespace(environment.getProperty(CONFIG_PROPERTY));
 		try {
+			// 日志初始化上下文
 			LoggingInitializationContext initializationContext = new LoggingInitializationContext(environment);
 			if (ignoreLogConfig(logConfig)) {
 				system.initialize(initializationContext, null, logFile);
@@ -338,6 +361,7 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 		if (this.springBootLogging != null) {
 			initializeSpringBootLogging(system, this.springBootLogging);
 		}
+		// 设置日志等级
 		setLogLevels(system, environment);
 	}
 
@@ -369,7 +393,9 @@ public class LoggingApplicationListener implements GenericApplicationListener {
 	 * @since 2.2.0
 	 */
 	protected void setLogLevels(LoggingSystem system, ConfigurableEnvironment environment) {
+		// 获取日志等级的配置
 		BiConsumer<String, LogLevel> customizer = getLogLevelConfigurer(system);
+		// 获取环境的绑定
 		Binder binder = Binder.get(environment);
 		Map<String, LogLevel> levels = binder.bind(LOGGING_LEVEL, STRING_LOGLEVEL_MAP).orElseGet(Collections::emptyMap);
 		levels.forEach((name, level) -> configureLogLevel(name, level, customizer));

@@ -51,6 +51,7 @@ final class ConfigurationPropertiesBeanRegistrar {
 	void register(Class<?> type) {
 		MergedAnnotation<ConfigurationProperties> annotation = MergedAnnotations
 				.from(type, SearchStrategy.TYPE_HIERARCHY).get(ConfigurationProperties.class);
+		// ConfigurationClass
 		register(type, annotation);
 	}
 

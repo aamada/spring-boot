@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
@@ -149,13 +150,16 @@ public abstract class LoggingSystem {
 	 * @return the logging system
 	 */
 	public static LoggingSystem get(ClassLoader classLoader) {
+		// LoggingSystem
 		String loggingSystemClassName = System.getProperty(SYSTEM_PROPERTY);
+		// 如果系统里如果设置有值的话, 如果这里没有设置的话, 就直接跳过
 		if (StringUtils.hasLength(loggingSystemClassName)) {
 			if (NONE.equals(loggingSystemClassName)) {
 				return new NoOpLoggingSystem();
 			}
 			return get(classLoader, loggingSystemClassName);
 		}
+		// new DelegatingLoggingSystemFactory((classLoader) -> SpringFactoriesLoader.loadFactories(LoggingSystemFactory.class, classLoader));
 		LoggingSystem loggingSystem = SYSTEM_FACTORY.getLoggingSystem(classLoader);
 		Assert.state(loggingSystem != null, "No suitable logging system located");
 		return loggingSystem;
