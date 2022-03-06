@@ -310,6 +310,8 @@ class BeanDefinitionLoader {
 	/**
 	 * Simple {@link TypeFilter} used to ensure that specified {@link Class} sources are
 	 * not accidentally re-added during scanning.
+	 *
+	 * 是BeanDefinitionLoader的内部静态类, 继承自AbstractTypeHierarchyTraversingFilter抽象类, 用于排除sources的扫描
 	 */
 	private static class ClassExcludeFilter extends AbstractTypeHierarchyTraversingFilter {
 
